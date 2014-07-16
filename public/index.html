@@ -48,7 +48,7 @@ var canvas = document.getElementById("canvas"),
         particles = [], // Array containing particles
         ball = {}, // Ball object
         paddles = [2], // Array containing two paddles
-        mouse = {}, // Mouse object to store it's current position
+        players = { player1: {}, player2: {}}, // Mouse object to store it's current position
         points = 0, // Varialbe to store points
         fps = 60, // Max FPS (frames per second)
         particlesCount = 20, // Number of sparks when ball strikes the paddle
@@ -65,8 +65,7 @@ var canvas = document.getElementById("canvas"),
 // canvas.addEventListener("mousemove", trackPosition, true);
 var socket = io();
 socket.on('move', function (data) {
-    console.log(data.player);
-    trackPosition(data.player);
+    trackPosition(data);
 });
 canvas.addEventListener("mousedown", btnClick, true);
 
@@ -195,7 +194,8 @@ function increaseSpd() {
 
 // Track the position of mouse cursor
 function trackPosition(e) {
-    mouse.x = e.x;
+    players.player1.x = e.player1.x;
+    players.player2.x = e.player2.x;
 }
 
 // Function to update positions, score and everything.
@@ -208,12 +208,12 @@ function update() {
     // Move the paddles on mouse move
     for (var i = 1; i < paddles.length; i++) {
         p = paddles[i];
-        p.x = mouse.x - p.w / 2;
+        p.x = players['player' + i].x - p.w / 2;
     }
 
     // Move the ball
-     ball.x += ball.vx;
-     ball.y += ball.vy;
+    ball.x += ball.vx;
+    ball.y += ball.vy;
 
 
     // Collision with paddles
@@ -228,13 +228,9 @@ function update() {
     // and change the multiplier
     if (collides(ball, p1)) {
         collideAction(ball, p1);
-    }
-
-
-    else if (collides(ball, p2)) {
+    } else if (collides(ball, p2)) {
         collideAction(ball, p2);
     }
-
     else {
         // Collide with walls, If the ball hits the top/bottom,
         // walls, run gameOver() function
@@ -261,7 +257,6 @@ function update() {
         }
     }
 
-
     // If flag is set, push the particles
     if (flag == 1) {
         for (var k = 0; k < particlesCount; k++) {
@@ -284,12 +279,10 @@ function collides(b, p) {
             paddleHit = 1;
             return true;
         }
-
         else if (b.y <= p.h && p.y == 0) {
             paddleHit = 2;
             return true;
         }
-
         else return false;
     }
 }
